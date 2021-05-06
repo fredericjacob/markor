@@ -236,6 +236,7 @@ public class ZimWikiTextActions extends net.gsantner.markor.ui.hleditor.TextActi
                     return true;
                 }
                 case R.string.tmaid_zimwiki_code_inline: {
+                    // TODO: does not work correctly if text is already selected
                     _hlEditor.disableHighlighterAutoFormat();
                     final int c = _hlEditor.setSelectionExpandWholeLines();
                     _hlEditor.getText().insert(_hlEditor.getSelectionStart(), "\n'''\n");

@@ -75,18 +75,23 @@ public class AttachImageOrLinkDialog {
         }
 
         // Extract filepath if using Markdown
+        // pre-fills the name and link fields in the dialog from the current line
         if (textFormatId == TextFormat.FORMAT_MARKDOWN) {
-            if (_hlEditor.hasSelection()) {
+            if (_hlEditor.hasSelection()) { // case 1: use current selection as filepath for the file to be attached
                 String selected_text = "";
                 try {
                     selected_text = _hlEditor.getText().subSequence(_hlEditor.getSelectionStart(), _hlEditor.getSelectionEnd()).toString();
                 } catch (Exception ignored) {
                 }
                 inputPathName.setText(selected_text);
-            } else if (_hlEditor.getText().toString().isEmpty()) {
+            } else if (_hlEditor.getText().toString().isEmpty()) { // case 2: there is no text in the document...?
                 inputPathName.setText("");
-            } else {
+            } else { // standard case:
                 final Editable contentText = _hlEditor.getText();
+
+                // start at the current cursor pos
+                // move start and end cursor so that the selection ranges from the next line break before to the next line break after the current pos
+                // TODO: use StringUtils.getLineStart() and StringUtils.getLineEnd() instead!
                 int lineStartidx = Math.max(startCursorPos, 0);
                 int lineEndidx = Math.min(startCursorPos, contentText.length() - 1);
                 lineStartidx = Math.min(lineEndidx, lineStartidx);
@@ -129,9 +134,9 @@ public class AttachImageOrLinkDialog {
                 String text = null;
                 boolean isInSaveDir = file.getAbsolutePath().startsWith(saveDir) && currentWorkingFile.getAbsolutePath().startsWith(saveDir);
                 boolean isInCurrentDir = currentWorkingFile.getAbsolutePath().startsWith(file.getParentFile().getAbsolutePath());
-                if (isInCurrentDir || isInSaveDir) {
+                if (isInCurrentDir || isInSaveDir) { // if the file is
                     text = FileUtils.relativePath(currentWorkingFile, file);
-                } else if ("abs_if_not_relative".equals(request)) {
+                } else if ("abs_if_not_relative".equals(request)) { // absolute path
                     text = file.getAbsolutePath();
                 } else {
                     String filename = file.getName();
@@ -141,7 +146,7 @@ public class AttachImageOrLinkDialog {
                     File targetCopy = new File(currentWorkingFile.getParentFile(), filename);
                     showCopyFileToDirDialog(activity, file, targetCopy, false, (cbRetValSuccess, cbRestValTargetFile) -> onFsViewerSelected("abs_if_not_relative", cbRestValTargetFile));
                 }
-                if (text == null) {
+                if (text == null) { // fallback - use absolute file path if nothing of the above worked
                     text = file.getAbsolutePath();
                 }
 
